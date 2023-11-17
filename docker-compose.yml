@@ -1,0 +1,75 @@
+version: '3'
+
+networks:
+  # enable connection with Traefik
+  traefik:
+    external: true
+  # network for the app
+  apps-network:
+
+services:
+  php:
+    container_name: "site-php-fpm"
+    image: jvnetobr/php-fpm:1.0
+    volumes:
+      - ./src-data/wordpress:/var/www/html/
+    networks:
+      - apps-network
+    depends_on:
+      - db      
+    
+  nginx:
+    container_name: "site-exemplo-web"
+    image: jvnetobr/nginx:1.1
+    depends_on:
+      - php
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+        - ./src-data/wordpress:/var/www/html/public
+#        - ./src-data/wp-content:/var/www/html/public/wp-content
+#        - ./src-data/wp-config.php:/var/www/html/public/wp-config.php
+    networks:
+      - traefik
+      - apps-network
+    labels:
+      # The labels are usefull for Traefik only
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      # Get the routes from http
+      #- "traefik.http.routers.site-exemplo.rule=Host(`${DOMAIN}`) && PathPrefix(`/DOMAINPATH`)"
+      - "traefik.http.routers.site-exemplo.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.site-exemplo.entrypoints=web"
+      # Redirect these routes to https
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.site-exemplo.middlewares=redirect-to-https@docker"
+      # Get the routes from https
+      #- "traefik.http.routers.site-exemplo-secured.rule=Host(`${DOMAIN}`) && PathPrefix(`/DOMAINPATH`)"
+      - "traefik.http.routers.site-exemplo-secured.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.site-exemplo-secured.entrypoints=web-secure"
+      # Apply autentificiation with http challenge
+      - "traefik.http.routers.site-exemplo-secured.tls=true"
+      - "traefik.http.routers.site-exemplo-secured.tls.certresolver=myhttpchallenge"
+
+  db:
+    container_name: "site-exemplo-db"    
+    # this is the database used by Wordpress
+    #image: mysql:5.7
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      # Connect WordPrerss to the database
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      # Here, the database files are linked into a directory for direct access
+      # You probably prefer to use a docker volume instead
+      - ./db:/var/lib/mysql
+      #- ./mydbname:/var/lib/mysql/mydbname
+    networks:
+      - apps-network
