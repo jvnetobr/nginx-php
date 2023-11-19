@@ -8,16 +8,6 @@ networks:
   apps-network:
 
 services:
-  php:
-    container_name: "site-php-fpm"
-    image: jvnetobr/php-fpm:1.0
-    volumes:
-      - ./src-data/wordpress:/var/www/html/
-    networks:
-      - apps-network
-    depends_on:
-      - db      
-    
   nginx:
     container_name: "site-exemplo-web"
     image: jvnetobr/nginx:1.1
@@ -52,6 +42,17 @@ services:
       - "traefik.http.routers.site-exemplo-secured.tls=true"
       - "traefik.http.routers.site-exemplo-secured.tls.certresolver=myhttpchallenge"
 
+  php:
+    container_name: "site-php-fpm"
+    image: php:8.2-fpm
+    #image: jvnetobr/php-fpm:1.0
+    volumes:
+      - ./src-data/wordpress:/var/www/html/
+    networks:
+      - apps-network
+    depends_on:
+      - db     
+
   db:
     container_name: "site-exemplo-db"    
     # this is the database used by Wordpress
@@ -70,6 +71,6 @@ services:
       # Here, the database files are linked into a directory for direct access
       # You probably prefer to use a docker volume instead
       - ./db:/var/lib/mysql
-      #- ./mydbname:/var/lib/mysql/mydbname
+      #- ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       - apps-network

@@ -52,7 +52,7 @@ RUN \
   ln -s /usr/bin/php* /usr/bin/php
 
 ENV PHP_PKG_NAME=$PHP_PKG_NAME
-WORKDIR /root
+WORKDIR /var/www/html
 EXPOSE 9000/tcp
 CMD ["php-fpm"]
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 CMD cgi-fcgi -bind -connect $PHP_FPM_STATUS_LISTEN
