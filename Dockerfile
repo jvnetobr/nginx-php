@@ -47,6 +47,8 @@ RUN \
     moreutils \
     tzdata
 
+COPY ./appends/php.sh /root/php-fpm.sh
+
 RUN \
   ln -s /usr/sbin/php-fpm* /usr/sbin/php-fpm && \
   ln -s /usr/bin/php* /usr/bin/php
