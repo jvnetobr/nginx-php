@@ -20,10 +20,10 @@ services:
     volumes:
       - ./src-data/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./src-data/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./src-data/wordpress:/var/www/html/public
+      - ./src-data/wordpress:/var/www/html:rw
       # app files
-      - ./src-data/wp-content:/var/www/html/public/wp-content:rw
-      - ./src-data/wp-config.php:/var/www/html/public/wp-config.php:rw
+      - ./src-data/wp-content:/var/www/html/wp-content:rw
+      - ./src-data/wp-config.php:/var/www/html/wp-config.php:rw
     networks:
       - traefik
       - apps-network
@@ -51,7 +51,7 @@ services:
     #image: php:fpm-alpine
     image: jvnetobr/php-fpm:1.0
     volumes:
-      - ./src-data/wordpress:/var/www/html/public
+      - ./src-data/wordpress:/var/www/html:rw
     networks:
       - apps-network
     ports:
