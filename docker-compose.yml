@@ -9,21 +9,21 @@ networks:
 
 services:
   nginx:
-    container_name: "site-exemplo-web"
-    image: nginx:alpine
+    container_name: "site-cloudsecure-web"
+    image: nginx:stable-alpine
     #image: jvnetobr/nginx:1.1
     depends_on:
       - php-fpm
     restart: always
     env_file:
-      - ./.env
+      - ./env/app.env
     volumes:
-      - ./src-data/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./src-data/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./src-data/wordpress:/var/www/html:rw
+      #- ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       # app files
-      - ./src-data/wp-content:/var/www/html/wp-content:rw
-      - ./src-data/wp-config.php:/var/www/html/wp-config.php:rw
+      - ./app:/var/www/html
+      #- ./app/wp-content:/var/www/html/wp-content
+      # - ./app/wp-config.php:/var/www/html/wp-config.php
     networks:
       - traefik
       - apps-network
@@ -33,45 +33,41 @@ services:
       - "traefik.docker.network=traefik"
       # Get the routes from http
       #- "traefik.http.routers.site-exemplo.rule=Host(`${DOMAIN}`) && PathPrefix(`/DOMAINPATH`)"
-      - "traefik.http.routers.site-exemplo.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.site-exemplo.entrypoints=web"
+      - "traefik.http.routers.site-cloudsecure.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.site-cloudsecure.entrypoints=web"
       # Redirect these routes to https
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.site-exemplo.middlewares=redirect-to-https@docker"
+      - "traefik.http.routers.site-cloudsecure.middlewares=redirect-to-https@docker"
       # Get the routes from https
       #- "traefik.http.routers.site-exemplo-secured.rule=Host(`${DOMAIN}`) && PathPrefix(`/DOMAINPATH`)"
-      - "traefik.http.routers.site-exemplo-secured.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.site-exemplo-secured.entrypoints=web-secure"
+      - "traefik.http.routers.site-cloudsecure-secured.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.site-cloudsecure-secured.entrypoints=web-secure"
       # Apply autentificiation with http challenge
-      - "traefik.http.routers.site-exemplo-secured.tls=true"
-      - "traefik.http.routers.site-exemplo-secured.tls.certresolver=myhttpchallenge"
+      - "traefik.http.routers.site-cloudsecure-secured.tls=true"
+      - "traefik.http.routers.site-cloudsecure-secured.tls.certresolver=myhttpchallenge"
 
   php-fpm:
-    container_name: "site-exemplo-php"
+    container_name: "site-cloudsecure-php"
     #image: php:fpm-alpine
     image: jvnetobr/php-fpm:1.0
     volumes:
-      - ./src-data/wordpress:/var/www/html:rw
+      - ./app:/var/www/html
+      #- ./app/wp-content:/var/www/html/wp-content
+      #- ./app/wp-config.php:/var/www/html/wp-config.php
     networks:
       - apps-network
     ports:
-      - "9000:9000"      
+      - "9000:9000"
     depends_on:
       - db
 
   db:
-    container_name: "site-exemplo-db"    
+    container_name: "site-cloudsecure-db"
     #image: mysql:5.7
     image: mysql:8.0
     restart: always
     env_file:
-      - ./.env
-    environment:
-      # Connect app to the db
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      - ./env/mysql.env
     volumes:
       - ./db:/var/lib/mysql
       #- ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
