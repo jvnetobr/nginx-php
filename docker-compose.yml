@@ -16,7 +16,8 @@ services:
       - php-fpm
     restart: always
     env_file:
-      - ./env/app.env
+      #- ./env/app.env
+      - ./.env
     volumes:
       #- ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -27,6 +28,8 @@ services:
     networks:
       - traefik
       - apps-network
+    ports:
+      - "8000:80"
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
@@ -54,10 +57,12 @@ services:
       - ./app:/var/www/html
       #- ./app/wp-content:/var/www/html/wp-content
       #- ./app/wp-config.php:/var/www/html/wp-config.php
+    working_dir: /var/www/html
+    user: "${UID:-1000}:${GID:-1000}"
     networks:
       - apps-network
-    ports:
-      - "9000:9000"
+    #ports:
+      #- "9000:9000"
     depends_on:
       - db
 
