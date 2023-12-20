@@ -11,15 +11,14 @@ services:
   nginx:
     container_name: "site-exemplo-web"
     image: nginx:stable-alpine
-    #image: jvnetobr/nginx:1.1
     depends_on:
       - php-fpm
     restart: always
     env_file:
-      #- ./env/app.env
       - ./.env
     volumes:
       # nginx conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       # app files
       - ./app:/var/www/html
@@ -56,7 +55,7 @@ services:
       #- ./app/wp-content:/var/www/html/wp-content
       #- ./app/wp-config.php:/var/www/html/wp-config.php
     working_dir: /var/www/html
-    user: "${UID:-1000}:${GID:-1000}"
+    #user: "${UID:-1000}:${GID:-1000}"
     networks:
       - traefik
       - apps-network
