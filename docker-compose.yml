@@ -72,6 +72,6 @@ services:
       - ./.env
     volumes:
       - ./db:/var/lib/mysql
-      #- ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      #- ./dump-sql:/dump-sql
     networks:
       - apps-network
